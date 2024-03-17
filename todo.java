@@ -1,5 +1,5 @@
 import java.util.*;
-
+import java.io.*;
 public class todo {
     // ANSI color codes
     public static final String ANSI_RESET = "\u001B[0m";
@@ -11,6 +11,8 @@ public class todo {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Map<String, Boolean> tasks = new HashMap<>();
+
+        loadTasks(tasks);
         System.out.print("\033[H\033[2J");
         System.out.flush();
 
@@ -79,6 +81,7 @@ public class todo {
             }
         }
         sc.close();
+        saveTasks(tasks);
     }
 
     // Method to display tasks with their indices and completion status
@@ -108,4 +111,34 @@ public class todo {
         System.out.println(ANSI_YELLOW + "Enter /exit to exit the application" + ANSI_RESET);
         System.out.println(ANSI_YELLOW + "Enter /help to display this help" + ANSI_RESET);
     }
+
+    public static void saveTasks(Map<String, Boolean> tasks) {
+        // Save tasks to a file
+        try (FileWriter fw = new FileWriter("todo-cli/tasks.txt")) {
+            for (Map.Entry<String, Boolean> entry : tasks.entrySet()) {
+                String task = entry.getKey();
+                boolean isDone = entry.getValue();
+                fw.write(task + " : " + isDone + "\n");
+            }
+        } catch (IOException e) {
+            System.out.println(ANSI_RED + "An error occurred while saving tasks" + ANSI_RESET);
+            e.printStackTrace();
+        }
+    }
+
+    public static void loadTasks(Map<String, Boolean> tasks) {
+        // Load tasks from a file
+        try (BufferedReader br = new BufferedReader(new FileReader("todo-cli/tasks.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(" : ");
+                String task = parts[0];
+                boolean isDone = Boolean.parseBoolean(parts[1]);
+                tasks.put(task, isDone);
+            }
+        } catch (IOException e) {
+            System.out.println(ANSI_RED + "An error occurred while loading tasks" + ANSI_RESET);
+            e.printStackTrace();
+        }
+    }   
 }
